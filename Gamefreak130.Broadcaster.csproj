@@ -32,8 +32,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="s3pi.Interfaces">
+      <HintPath>lib\s3pi.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="s3pi.Package">
+      <HintPath>lib\s3pi.Package.dll</HintPath>
+    </Reference>
+    <Reference Include="s3pi.Settings">
+      <HintPath>lib\s3pi.Settings.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Custom">
+      <HintPath>lib\System.Custom.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -70,6 +82,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\s3pi.Interfaces.dll" />
+    <Content Include="Resources\s3pi.Interfaces.xml" />
+    <Content Include="Resources\s3pi.Package.dll" />
+    <Content Include="Resources\s3pi.Package.xml" />
+    <Content Include="Resources\s3pi.Settings.dll" />
+    <Content Include="Resources\System.Custom.dll" />
+    <Content Include="Resources\System.Custom.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
