@@ -9,6 +9,8 @@ namespace Gamefreak130.Broadcaster
 {
     public partial class BroadcasterMain : Form
     {
+        private readonly List<MusicFile> music = new List<MusicFile>();
+
         public BroadcasterMain()
         {
             // Auto-generated form initialization
@@ -29,9 +31,10 @@ namespace Gamefreak130.Broadcaster
             {
                 object[] selectedObjects = new object[listBoxMusic.SelectedItems.Count];
                 listBoxMusic.SelectedItems.CopyTo(selectedObjects, 0);
-                foreach (object current in selectedObjects)
+                foreach (MusicFile current in selectedObjects)
                 {
                     listBoxMusic.Items.Remove(current);
+                    music.Remove(current);
                 }
                 ToggleButton();
             }
@@ -52,9 +55,11 @@ namespace Gamefreak130.Broadcaster
 
         private void OpenFileDialog_FileOk(object sender, CancelEventArgs e)
         {
-            foreach (string file in openFileDialog.FileNames)
+            for (int i = 0; i < openFileDialog.FileNames.Length; i++)
             {
-                listBoxMusic.Items.Add(file);
+                MusicFile track = new MusicFile(openFileDialog.FileNames[i], openFileDialog.SafeFileNames[i]);
+                music.Add(track);
+                listBoxMusic.Items.Add(track);
             }
             ToggleButton();
         }
@@ -74,7 +79,7 @@ namespace Gamefreak130.Broadcaster
             saveFileDialog.ShowDialog();
         }
 
-        private void WritePackage()
+        private static void WritePackage()
         {
             throw new NotImplementedException();
             Package test = Package.NewPackage(0) as Package;
