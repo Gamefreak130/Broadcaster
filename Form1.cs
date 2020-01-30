@@ -11,6 +11,14 @@ namespace Gamefreak130.Broadcaster
     {
         private readonly List<MusicFile> music = new List<MusicFile>();
 
+        private static readonly ToolTip musicToolTip = new ToolTip()
+        {
+            AutoPopDelay = 5000,
+            InitialDelay = 1000,
+            ReshowDelay = 500,
+            ShowAlways = true
+        };
+
         public BroadcasterMain()
         {
             // Auto-generated form initialization
@@ -40,7 +48,24 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        private void CmbStation_KeyPress(object sender, KeyPressEventArgs e)
+        private void ListBoxMusic_MouseMoved(object sender, MouseEventArgs e)
+        {
+            int i = listBoxMusic.IndexFromPoint(e.Location);
+            if (i > -1)
+            {
+                string msg = (listBoxMusic.Items[i] as MusicFile).FullName;
+                if (musicToolTip.GetToolTip(listBoxMusic) != msg)
+                {
+                    musicToolTip.SetToolTip(listBoxMusic, (listBoxMusic.Items[i] as MusicFile).FullName);
+                }
+            }
+            else
+            {
+                musicToolTip.RemoveAll();
+            }
+        }
+
+        private void CmbStation_KeyPressed(object sender, KeyPressEventArgs e)
         {
             if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar) && !char.IsControl(e.KeyChar))
             {

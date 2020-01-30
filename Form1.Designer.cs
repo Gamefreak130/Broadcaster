@@ -66,6 +66,7 @@ namespace Gamefreak130.Broadcaster
             this.listBoxMusic.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBoxMusic.Size = new System.Drawing.Size(343, 148);
             this.listBoxMusic.TabIndex = 0;
+            this.listBoxMusic.MouseMove += new System.Windows.Forms.MouseEventHandler(ListBoxMusic_MouseMoved);
             // 
             // btnAdd
             // 
@@ -127,7 +128,7 @@ namespace Gamefreak130.Broadcaster
             this.cmbStation.Sorted = true;
             this.cmbStation.TabIndex = 3;
             this.cmbStation.TextChanged += new System.EventHandler(this.CmbStation_TextChanged);
-            this.cmbStation.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CmbStation_KeyPress);
+            this.cmbStation.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CmbStation_KeyPressed);
             // 
             // btnGenerate
             // 
