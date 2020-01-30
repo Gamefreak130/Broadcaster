@@ -64,6 +64,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -84,13 +87,16 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\s3pi.Interfaces.dll" />
-    <Content Include="Resources\s3pi.Interfaces.xml" />
-    <Content Include="Resources\s3pi.Package.dll" />
-    <Content Include="Resources\s3pi.Package.xml" />
-    <Content Include="Resources\s3pi.Settings.dll" />
-    <Content Include="Resources\System.Custom.dll" />
-    <Content Include="Resources\System.Custom.xml" />
+    <Content Include="lib\s3pi.Interfaces.dll" />
+    <Content Include="lib\s3pi.Interfaces.xml" />
+    <Content Include="lib\s3pi.Package.dll" />
+    <Content Include="lib\s3pi.Package.xml" />
+    <Content Include="lib\s3pi.Settings.dll" />
+    <Content Include="lib\System.Custom.dll" />
+    <Content Include="lib\System.Custom.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="res\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
