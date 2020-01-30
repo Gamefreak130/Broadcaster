@@ -7,7 +7,7 @@
     <ProjectGuid>{36EE9822-CB78-41E6-817D-02975FD6AA1A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Gamefreak130.Broadcaster</RootNamespace>
-    <AssemblyName>Gamefreak130.Broadcaster</AssemblyName>
+    <AssemblyName>Broadcaster</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
