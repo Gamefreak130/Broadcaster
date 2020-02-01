@@ -34,17 +34,21 @@
   <ItemGroup>
     <Reference Include="s3pi.Interfaces">
       <HintPath>lib\s3pi.Interfaces.dll</HintPath>
-    </Reference>
+	  <Private>False</Private>
+	</Reference>
     <Reference Include="s3pi.Package">
       <HintPath>lib\s3pi.Package.dll</HintPath>
+	  <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.Settings">
       <HintPath>lib\s3pi.Settings.dll</HintPath>
+	  <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Custom">
       <HintPath>lib\System.Custom.dll</HintPath>
+	  <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -76,7 +80,11 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Broadcaster.exe.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -88,16 +96,36 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\s3pi.Interfaces.dll" />
-    <Content Include="lib\s3pi.Interfaces.xml" />
-    <Content Include="lib\s3pi.Package.dll" />
-    <Content Include="lib\s3pi.Package.xml" />
-    <Content Include="lib\s3pi.Settings.dll" />
-    <Content Include="lib\System.Custom.dll" />
-    <Content Include="lib\System.Custom.xml" />
+    <Content Include="lib\ealayer3.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lib\libmpg123-0.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lib\s3pi.Interfaces.dll">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\s3pi.Interfaces.xml">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\s3pi.Package.dll">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\s3pi.Package.xml">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\s3pi.Settings.dll">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\System.Custom.dll">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="lib\System.Custom.xml">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+    <Content Include="Resources\Icon_sound_radio.jpg" />
+    <Content Include="Resources\The_sims_3_Plumbob_Icon_by_morten80.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="res\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,9 +1,9 @@
 ﻿using s3pi.Package;
-using s3pi.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.IO;
 
 namespace Gamefreak130.Broadcaster
 {
@@ -41,22 +41,23 @@ namespace Gamefreak130.Broadcaster
                 listBoxMusic.SelectedItems.CopyTo(selectedObjects, 0);
                 foreach (MusicFile current in selectedObjects)
                 {
-                    listBoxMusic.Items.Remove(current);
-                    music.Remove(current);
+                    RemoveTrack(current);
                 }
                 ToggleButton();
             }
         }
+
+        
 
         private void ListBoxMusic_MouseMoved(object sender, MouseEventArgs e)
         {
             int i = listBoxMusic.IndexFromPoint(e.Location);
             if (i > -1)
             {
-                string msg = (listBoxMusic.Items[i] as MusicFile).FullName;
+                string msg = (listBoxMusic.Items[i] as MusicFile).mFullName;
                 if (musicToolTip.GetToolTip(listBoxMusic) != msg)
                 {
-                    musicToolTip.SetToolTip(listBoxMusic, (listBoxMusic.Items[i] as MusicFile).FullName);
+                    musicToolTip.SetToolTip(listBoxMusic, (listBoxMusic.Items[i] as MusicFile).mFullName);
                 }
             }
             else
@@ -91,7 +92,11 @@ namespace Gamefreak130.Broadcaster
         
         private void SaveFileDialog_FileOk(object sender, CancelEventArgs e)
         {
-            WritePackage();
+            WritePackage(); //TODO Close dialog and indicate working
+            for (int i = listBoxMusic.Items.Count - 1; i >= 0; i--)
+            {
+                RemoveTrack((MusicFile)listBoxMusic.Items[i]);
+            }
         }
         
         private void ToggleButton()
@@ -103,16 +108,71 @@ namespace Gamefreak130.Broadcaster
         {
             saveFileDialog.ShowDialog();
         }
-
-        private static void WritePackage()
+        
+        private void RemoveTrack(MusicFile track)
         {
-            throw new NotImplementedException();
-            Package test = Package.NewPackage(0) as Package;
-            TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0, System.Security.Cryptography.FNV64.GetHash("TEST"));
-            System.IO.FileStream s = System.IO.File.OpenRead(@"C:\test.audt");
-            System.IO.FileStream newS = System.IO.File.Create(@"C:\test.package");
-            test.AddResource(tgi, s, true);
-            test.SaveAs(newS);
+            listBoxMusic.Items.Remove(track);
+            music.Remove(track);
+        }
+
+        private void WritePackage()
+        {
+            List<FileStream> files = new List<FileStream>();
+            List<Stream> resources = new List<Stream>();
+            try
+            {
+                //TODO Add Station Tuning
+                Package package = Package.NewPackage(0) as Package;
+                foreach (MusicFile track in music)
+                {
+                    FileStream file = Helpers.AddSnr(track, package);
+                    files.Add(file);
+
+                    Stream tuning = Helpers.AddPreviewTuning(track, package);
+                    resources.Add(tuning);
+                }
+                ulong hashedName = System.Security.Cryptography.FNV64.GetHash(cmbStation.Text);
+                /*Stream s = Helpers.AddAssembly(package, hashedName);
+                resources.Add(s);*/
+                Stream s = Helpers.AddInstantiator(package, hashedName);
+                resources.Add(s);
+                //TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0, System.Security.Cryptography.FNV64.GetHash("TEST"));
+                package.SaveAs(saveFileDialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                //TEST
+                string error = ex is IOException
+                        ? "A file and/or memory access error occurred.\n" +
+                          "Make sure no other programs are currently accessing the MP3 files or any other Broadcaster resources."
+                    : ex is FileNotFoundException
+                        ? "An error occurred while converting the specified MP3 files to a game-readable format.\n" +
+                          "Make sure that the files are valid."
+                    : ex is UnauthorizedAccessException
+                        ? "A file access error occurred.\n" +
+                          "Make sure that you have the proper permissions to access the specified files."
+                    : ex is DuplicateFileException
+                        ? "A duplicate resource error occurred.\n" +
+                          "Make sure that all the specified MP3 files have a unique name."
+                        : "Congratulations!\n" +
+                          "You have broken Broadcaster in a new and unexpected way.\n\n" +
+                          "Please report to the developer with the following information:\n" + 
+                          ex.ToString();
+                Helpers.ShowError(error);
+            }
+            finally
+            {
+                foreach (FileStream s in files)
+                {
+                    string path = s.Name;
+                    s.Close();
+                    File.Delete(path);
+                }
+                foreach (Stream s in resources)
+                {
+                    s.Close();
+                }
+            }
         }
     }
 }
