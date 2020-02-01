@@ -131,10 +131,15 @@ namespace Gamefreak130.Broadcaster
                     Stream tuning = Helpers.AddPreviewTuning(track, package);
                     resources.Add(tuning);
                 }
-                ulong hashedName = System.Security.Cryptography.FNV64.GetHash(cmbStation.Text);
-                /*Stream s = Helpers.AddAssembly(package, hashedName);
+                Random random = new Random();
+                string randomName = "";
+                for (int i = 0; i < 10; i++)
+                {
+                    randomName += (char)random.Next(48, 58);
+                }
+                /*Stream s = Helpers.AddAssembly(package, randomName);
                 resources.Add(s);*/
-                Stream s = Helpers.AddInstantiator(package, hashedName);
+                Stream s = Helpers.AddInstantiator(package, randomName);
                 resources.Add(s);
                 //TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0, System.Security.Cryptography.FNV64.GetHash("TEST"));
                 package.SaveAs(saveFileDialog.FileName);

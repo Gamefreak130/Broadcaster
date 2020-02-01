@@ -89,12 +89,12 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static FileStream AddAssembly(Package package, ulong instance)
+        internal static FileStream AddAssembly(Package package, string name)
         {
             FileStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x073FAA07, 0, instance);
+                TGIBlock tgi = new TGIBlock(0, null, 0x073FAA07, 0, FNV64.GetHash(name));
                 //TODO 
                 //s = File.OpenRead();
                 package.AddResource(tgi, s, true);
@@ -110,12 +110,12 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static MemoryStream AddInstantiator(Package package, ulong instance)
+        internal static MemoryStream AddInstantiator(Package package, string name)
         {
             MemoryStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, instance);
+                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(name));
                 s = new MemoryStream(Encoding.ASCII.GetBytes(kInstantiator));
                 package.AddResource(tgi, s, true);
                 return s;
