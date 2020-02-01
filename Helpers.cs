@@ -30,10 +30,10 @@ namespace Gamefreak130.Broadcaster
             FileStream s = null;
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"lib\ealayer3.exe"), 
+                ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"lib\ealayer3.exe"),
                                                                   string.Format("-E \"{0}\" --single-block", file.mFullName))
                 {
-                    CreateNoWindow = true
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
                 using (Process proc = new Process())
                 {
@@ -132,6 +132,7 @@ namespace Gamefreak130.Broadcaster
 
         internal static void ShowError(string message)
         {
+            System.Media.SystemSounds.Hand.Play();
             MessageBox.Show(message, "Technical Difficulties", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
