@@ -37,7 +37,7 @@ namespace Gamefreak130.Broadcaster
             this.listBoxMusic = new System.Windows.Forms.ListBox();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.cmbStation = new System.Windows.Forms.ComboBox();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
@@ -66,7 +66,7 @@ namespace Gamefreak130.Broadcaster
             this.listBoxMusic.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBoxMusic.Size = new System.Drawing.Size(343, 148);
             this.listBoxMusic.TabIndex = 0;
-            this.listBoxMusic.MouseMove += new System.Windows.Forms.MouseEventHandler(ListBoxMusic_MouseMoved);
+            this.listBoxMusic.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ListBoxMusic_MouseMoved);
             // 
             // btnAdd
             // 
@@ -89,6 +89,11 @@ namespace Gamefreak130.Broadcaster
             this.btnRemove.Text = "Remove Selected";
             this.btnRemove.UseVisualStyleBackColor = true;
             this.btnRemove.Click += new System.EventHandler(this.BtnRemove_Click);
+            // 
+            // backgroundWorker
+            // 
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Broadcast);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.Cleanup);
             // 
             // cmbStation
             // 
@@ -195,7 +200,7 @@ namespace Gamefreak130.Broadcaster
         private System.Windows.Forms.ListBox listBoxMusic;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.ComboBox cmbStation;
         private System.Windows.Forms.Button btnGenerate;
         private System.Windows.Forms.Label lblInstructions;

@@ -47,8 +47,6 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        
-
         private void ListBoxMusic_MouseMoved(object sender, MouseEventArgs e)
         {
             int i = listBoxMusic.IndexFromPoint(e.Location);
@@ -92,13 +90,19 @@ namespace Gamefreak130.Broadcaster
         
         private void SaveFileDialog_FileOk(object sender, CancelEventArgs e)
         {
-            WritePackage(); //TODO Close dialog and indicate working
-            for (int i = listBoxMusic.Items.Count - 1; i >= 0; i--)
+            ToggleWorkingStatus();
+            btnGenerate.Text = "Broadcasting...";
+            backgroundWorker.RunWorkerAsync();
+        }
+
+        private void ToggleWorkingStatus()
+        {
+            foreach (Control control in Controls)
             {
-                RemoveTrack((MusicFile)listBoxMusic.Items[i]);
+                control.Enabled = !control.Enabled;
             }
         }
-        
+
         private void ToggleButton()
         {
             btnGenerate.Enabled = !string.IsNullOrWhiteSpace(cmbStation.Text) && listBoxMusic.Items.Count != 0;
@@ -108,11 +112,32 @@ namespace Gamefreak130.Broadcaster
         {
             saveFileDialog.ShowDialog();
         }
+
+        private void Cleanup(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error == null)
+            {
+                System.Media.SystemSounds.Exclamation.Play();
+                MessageBox.Show(string.Format("Broadcast to {0} successful.", Path.GetFileName(saveFileDialog.FileName)), "On Air", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            ToggleWorkingStatus();
+            btnGenerate.Text = "   Broadcast";
+            for (int i = listBoxMusic.Items.Count - 1; i >= 0; i--)
+            {
+                RemoveTrack((MusicFile)listBoxMusic.Items[i]);
+            }
+            cmbStation.Text = string.Empty;
+        }
         
         private void RemoveTrack(MusicFile track)
         {
             listBoxMusic.Items.Remove(track);
             music.Remove(track);
+        }
+
+        private void Broadcast(object sender, DoWorkEventArgs e)
+        {
+            WritePackage();
         }
 
         private void WritePackage()
@@ -146,7 +171,6 @@ namespace Gamefreak130.Broadcaster
             }
             catch (Exception ex)
             {
-                //TEST
                 string error = ex is IOException
                         ? "A file and/or memory access error occurred.\n" +
                           "Make sure no other programs are currently accessing the MP3 files or any other Broadcaster resources."
@@ -164,6 +188,7 @@ namespace Gamefreak130.Broadcaster
                           "Please report to the developer with the following information:\n" + 
                           ex.ToString();
                 Helpers.ShowError(error);
+                throw;
             }
             finally
             {
