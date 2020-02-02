@@ -20,11 +20,62 @@ namespace Gamefreak130.Broadcaster
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<base>\n" +
             "  <Current_Tuning>\n" +
-            "    <kCJackB value=\"True\">\n" +
-            "      <!--True: Enables Crackerjack Bonanza mode. False: Triggers the apocalypse. Maybe.-->\n" +
-            "    </kCJackB>\n" +
+            "    <kStation value=\"{0}\">\n" +
+            "      <!--Name of the station associated with this package. Do not change or bad things will happen.-->\n" +
+            "    </kStation>\n" +
             "  </Current_Tuning>\n" +
             "</base>";
+
+        private const string kMusicEntriesHeader =
+            "<?xml version=\"1.0\" ?>\n" +
+            "<MusicSelection>\n" +
+            "  <Stereo>\n" +
+            "    <Genre name=\"{0}\" localizedName=\"Gameplay/Excel/Stereo/Stations:{1}\">\n";
+
+        private const string kMusicEntry = "      <Entry songkey=\"{0}\" title=\"{1}\" artist=\"{2}\" ToBeLocalized=\"0\" />\n";
+
+        private const string kMusicEntriesFooter =
+            "    </Genre>\n" +
+            "  </Stereo>\n" +
+            "</MusicSelection>";
+        
+        internal static MemoryStream CreateMusicEntries(string station)
+        {
+            MemoryStream s = null;
+            try
+            {
+                string header = string.Format(kMusicEntriesHeader, station, station == "Superhero" ? "Epic" 
+                                                                            : station == "Western" ? "Spaghetti_Western" 
+                                                                            : station);
+                byte[] headerSequence = Encoding.ASCII.GetBytes(header);
+                s = new MemoryStream();
+                s.Write(headerSequence, 0, headerSequence.Length);
+                return s;
+            }
+            catch
+            {
+                if (s != null)
+                {
+                    s.Close();
+                }
+                throw;
+            }
+        }
+
+        internal static void WriteMusicEntry(MusicFile file, Stream musicEntries)
+        {
+            byte[] entry = Encoding.ASCII.GetBytes(string.Format(kMusicEntry, file.mDisplayName, file.mTitle, file.mArtist));
+            musicEntries.Write(entry, 0, entry.Length);
+        }
+
+        internal static void FinalizeMusicEntries(Package package, string instanceName, Stream musicEntries)
+        {
+            byte[] footer = Encoding.ASCII.GetBytes(kMusicEntriesFooter);
+            musicEntries.Write(footer, 0, footer.Length);
+            TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash("Music_Entries_" + instanceName));
+            package.AddResource(tgi, musicEntries, true);
+        }
+
         internal static FileStream AddSnr(MusicFile file, Package package)
         {
             FileStream s = null;
@@ -41,7 +92,7 @@ namespace Gamefreak130.Broadcaster
                     proc.Start();
                     proc.WaitForExit();
                 }
-                TGIBlock tgi = new TGIBlock(0, null, 0x01A527DB, 0x001407EC, FNV64.GetHash(Path.GetFileNameWithoutExtension(file.mDisplayName)));
+                TGIBlock tgi = new TGIBlock(0, null, 0x01A527DB, 0x001407EC, FNV64.GetHash(file.mDisplayName));
                 string snrName = Path.ChangeExtension(file.mFullName, ".ealayer3");
                 s = File.OpenRead(snrName);
                 if (package.AddResource(tgi, s, true) == null)
@@ -68,7 +119,7 @@ namespace Gamefreak130.Broadcaster
             MemoryStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, FNV64.GetHash(Path.GetFileNameWithoutExtension(file.mDisplayName)));
+                TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, FNV64.GetHash(file.mDisplayName));
                 s = new MemoryStream();
                 //TODO
                 //s.Write();
@@ -110,13 +161,13 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static MemoryStream AddInstantiator(Package package, string name)
+        internal static MemoryStream AddInstantiator(Package package, string instanceName, string station)
         {
             MemoryStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(name));
-                s = new MemoryStream(Encoding.ASCII.GetBytes(kInstantiator));
+                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(instanceName));
+                s = new MemoryStream(Encoding.ASCII.GetBytes(string.Format(kInstantiator, station)));
                 package.AddResource(tgi, s, true);
                 return s;
             }
@@ -135,6 +186,36 @@ namespace Gamefreak130.Broadcaster
             System.Media.SystemSounds.Hand.Play();
             MessageBox.Show(message, "Technical Difficulties", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
+        internal static string FixupStation(string station)
+        {
+            switch (station)
+            {
+                case "Chinese":
+                    return "China";
+                case "Dark_Wave":
+                    return "DarkWave";
+                case "Digitunes":
+                    return "Future";
+                case "Egyptian":
+                    return "Egypt";
+                case "Epic":
+                    return "Superhero";
+                case "French":
+                    return "France";
+                case "Geek_Rock":
+                    return "GeekRock";
+                case "Hip_Hop":
+                    return "HipHop";
+                case "R&B":
+                    return "RnB";
+                case "Spooky":
+                    return "Horror";
+                default:
+                    return station;
+            }
+        }
+
     }
 
     internal class MusicFile
@@ -150,8 +231,10 @@ namespace Gamefreak130.Broadcaster
         internal MusicFile(string fullName, string displayName)
         {
             mFullName = fullName;
-            mDisplayName = displayName;
+            mDisplayName = Path.GetFileNameWithoutExtension(displayName);
             //TODO grab metadata
+            mTitle = "";
+            mArtist = "";
         }
 
         public override string ToString()

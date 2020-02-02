@@ -19,6 +19,8 @@ namespace Gamefreak130.Broadcaster
             ShowAlways = true
         };
 
+        private delegate string StringAccessor();
+
         public BroadcasterMain()
         {
             // Auto-generated form initialization
@@ -146,8 +148,14 @@ namespace Gamefreak130.Broadcaster
             List<Stream> resources = new List<Stream>();
             try
             {
-                //TODO Add Station Tuning
+                string station = (string)cmbStation.Invoke(new StringAccessor(delegate() { return cmbStation.Text.Replace(' ', '_'); }));
+                station = Helpers.FixupStation(station);
+                //TODO Add Station Tuning (audt)
+                //CONSIDER Add NMAP?
+                //Don't forget islandlife and beachparty
                 Package package = Package.NewPackage(0) as Package;
+                MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
+                resources.Add(musicEntries);
                 foreach (MusicFile track in music)
                 {
                     FileStream file = Helpers.AddSnr(track, package);
@@ -155,16 +163,19 @@ namespace Gamefreak130.Broadcaster
 
                     Stream tuning = Helpers.AddPreviewTuning(track, package);
                     resources.Add(tuning);
+
+                    Helpers.WriteMusicEntry(track, musicEntries);
                 }
                 Random random = new Random();
-                string randomName = "";
+                string instanceName = "";
                 for (int i = 0; i < 10; i++)
                 {
-                    randomName += (char)random.Next(48, 58);
+                    instanceName += (char)random.Next(48, 58);
                 }
+                Helpers.FinalizeMusicEntries(package, instanceName, musicEntries);
                 /*Stream s = Helpers.AddAssembly(package, randomName);
                 resources.Add(s);*/
-                Stream s = Helpers.AddInstantiator(package, randomName);
+                Stream s = Helpers.AddInstantiator(package, instanceName, station);
                 resources.Add(s);
                 //TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0, System.Security.Cryptography.FNV64.GetHash("TEST"));
                 package.SaveAs(saveFileDialog.FileName);
