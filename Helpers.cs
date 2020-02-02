@@ -82,7 +82,7 @@ namespace Gamefreak130.Broadcaster
             try
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"lib\ealayer3.exe"),
-                                                                  string.Format("-E \"{0}\" --single-block", file.mFullName))
+                                                                  $"-E \"{file.mFullName}\" --single-block")
                 {
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
@@ -232,9 +232,11 @@ namespace Gamefreak130.Broadcaster
         {
             mFullName = fullName;
             mDisplayName = Path.GetFileNameWithoutExtension(displayName);
-            //TODO grab metadata
-            mTitle = "";
-            mArtist = "";
+            using (TagLib.File file = TagLib.File.Create(mFullName))
+            {
+                mTitle = file.Tag.Title ?? mDisplayName;
+                mArtist = file.Tag.Performers.Length > 0 ? string.Join(", ", file.Tag.Performers) : "-";
+            }
         }
 
         public override string ToString()
