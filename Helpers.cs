@@ -27,7 +27,7 @@ namespace Gamefreak130.Broadcaster
             "</base>";
 
         private const string kMusicEntriesHeader =
-            "<?xml version=\"1.0\" ?>\n" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<MusicSelection>\n" +
             "  <Stereo>\n" +
             "    <Genre name=\"{0}\" localizedName=\"Gameplay/Excel/Stereo/Stations:{1}\">\n";
@@ -38,6 +38,19 @@ namespace Gamefreak130.Broadcaster
             "    </Genre>\n" +
             "  </Stereo>\n" +
             "</MusicSelection>";
+
+        private static byte[] PreviewTuningHeader => new byte[]
+        {
+            0x00, 0x00, 0x00, 0x03, 0x5F, 0x63, 0x17, 0xD5, 0x03, 0xE8, 0x00, 0x1C, 0x00, 0x00, 0x00, 0x01, 
+            0x00, 0x00, 0x00, 0x10, 0x5E, 0x87, 0x99, 0x26, 0x70, 0xE5, 0x6A, 0x25, 0xFF, 0xFF, 0xFF, 0xFF, 
+            0x00, 0x00, 0x00, 0x00, 0xBA, 0x03, 0xD0, 0xCD, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+            0x70, 0x1E, 0xD9, 0x1E, 0x03, 0xE8, 0x00, 0x9C, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10
+        };
+
+        private static byte[] TrackTuningFooter => new byte[]
+        {
+            0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
+        };
         
         internal static MemoryStream CreateMusicEntries(string station)
         {
@@ -119,10 +132,13 @@ namespace Gamefreak130.Broadcaster
             MemoryStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, FNV64.GetHash(file.mDisplayName));
+                ulong hashedInstance = FNV64.GetHash(file.mDisplayName);
+                TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, hashedInstance);
                 s = new MemoryStream();
-                //TODO
-                //s.Write();
+                s.Write(PreviewTuningHeader, 0, PreviewTuningHeader.Length);
+                byte[] b = BitConverter.GetBytes(hashedInstance);
+                s.Write(b, 0, b.Length);
+                s.Write(TrackTuningFooter, 0, TrackTuningFooter.Length);
                 if (package.AddResource(tgi, s, true) == null)
                 {
                     //TEST

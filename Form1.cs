@@ -19,7 +19,7 @@ namespace Gamefreak130.Broadcaster
             ShowAlways = true
         };
 
-        private delegate string StringAccessor();
+        private delegate void ControlAccessor();
 
         public BroadcasterMain()
         {
@@ -148,10 +148,19 @@ namespace Gamefreak130.Broadcaster
             List<Stream> resources = new List<Stream>();
             try
             {
-                string station = (string)cmbStation.Invoke(new StringAccessor(delegate() { return cmbStation.Text.Replace(' ', '_'); }));
-                station = Helpers.FixupStation(station);
+                string station = "";
+                bool requiresStbl;
+                cmbStation.Invoke(new ControlAccessor(delegate () 
+                { 
+                    station = cmbStation.Text;
+                    requiresStbl = cmbStation.Items.Contains(station);
+                }));
+                station = station.Replace(' ', '_');
+                Helpers.FixupStation(station);
                 //TODO Add Station Tuning (audt)
                 //CONSIDER Add NMAP?
+                //CONSIDER translatable string table?
+                //TEST UTF-8 compatibility
                 //Don't forget islandlife and beachparty
                 Package package = Package.NewPackage(0) as Package;
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
