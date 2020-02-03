@@ -156,24 +156,31 @@ namespace Gamefreak130.Broadcaster
                     requiresStbl = cmbStation.Items.Contains(station);
                 }));
                 station = station.Replace(' ', '_');
-                Helpers.FixupStation(station);
-                //TODO Add Station Tuning (audt)
+                station = Helpers.FixupStation(station);
+                //TODO Station STBL if necessary
                 //CONSIDER Add NMAP?
                 //CONSIDER translatable string table?
                 //TEST UTF-8 compatibility
-                //Don't forget islandlife and beachparty
                 Package package = Package.NewPackage(0) as Package;
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
                 resources.Add(musicEntries);
+                MemoryStream[] stationTuning = Helpers.CreateStationTuning(music.Count);
+                foreach (Stream current in stationTuning)
+                {
+                    resources.Add(current);
+                }
+
                 foreach (MusicFile track in music)
                 {
                     FileStream file = Helpers.AddSnr(track, package);
                     files.Add(file);
 
-                    Stream tuning = Helpers.AddPreviewTuning(track, package);
+                    Stream tuning = Helpers.AddPreviewTuning(track.mDisplayName, package);
                     resources.Add(tuning);
 
                     Helpers.WriteMusicEntry(track, musicEntries);
+
+                    Helpers.WriteStationTrack(track.mDisplayName, stationTuning);
                 }
                 Random random = new Random();
                 string instanceName = "";
@@ -182,6 +189,7 @@ namespace Gamefreak130.Broadcaster
                     instanceName += (char)random.Next(48, 58);
                 }
                 Helpers.FinalizeMusicEntries(package, instanceName, musicEntries);
+                Helpers.FinalizeStationTuning(package, station, stationTuning);
                 /*Stream s = Helpers.AddAssembly(package, randomName);
                 resources.Add(s);*/
                 Stream s = Helpers.AddInstantiator(package, instanceName, station);

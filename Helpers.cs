@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Text;
+using System.Linq;
 
 namespace Gamefreak130.Broadcaster
 {
@@ -39,17 +40,29 @@ namespace Gamefreak130.Broadcaster
             "  </Stereo>\n" +
             "</MusicSelection>";
 
-        private static byte[] PreviewTuningHeader => new byte[]
+        private static byte[] AudioTuningHeader => new byte[]
         {
-            0x00, 0x00, 0x00, 0x03, 0x5F, 0x63, 0x17, 0xD5, 0x03, 0xE8, 0x00, 0x1C, 0x00, 0x00, 0x00, 0x01, 
-            0x00, 0x00, 0x00, 0x10, 0x5E, 0x87, 0x99, 0x26, 0x70, 0xE5, 0x6A, 0x25, 0xFF, 0xFF, 0xFF, 0xFF, 
-            0x00, 0x00, 0x00, 0x00, 0xBA, 0x03, 0xD0, 0xCD, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
-            0x70, 0x1E, 0xD9, 0x1E, 0x03, 0xE8, 0x00, 0x9C, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10
+            0xBA, 0x03, 0xD0, 0xCD, 0x00, 0x0A, 0x00, 
+            0x00, 0x00, 0x00, 0x00, 0x05, 0x5F, 0x63, 
+            0x17, 0xD5, 0x03, 0xE8, 0x00, 0x1C, 0x00, 
+            0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10
         };
 
-        private static byte[] TrackTuningFooter => new byte[]
+        private static byte[] SampleTuningHeader => new byte[]
+        {
+            0x70, 0x1E, 0xD9, 0x1E, 0x03, 0xE8, 0x00, 0x9C, 
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10
+        };
+
+        private static byte[] InstanceTuningFooter => new byte[]
         {
             0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00
+        };
+
+        private static byte[] StationTuningFooter => new byte[]
+        {
+            0x9E, 0x3C, 0xE3, 0x31, 0x00, 0x01, 0x00, 0x00, 0x01,
+            0xBA, 0x13, 0x41, 0x92, 0x00, 0x01, 0x00, 0x00, 0x01
         };
         
         internal static MemoryStream CreateMusicEntries(string station)
@@ -87,6 +100,84 @@ namespace Gamefreak130.Broadcaster
             musicEntries.Write(footer, 0, footer.Length);
             TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash("Music_Entries_" + instanceName));
             package.AddResource(tgi, musicEntries, true);
+        }
+
+        internal static MemoryStream[] CreateStationTuning(int fileCount)
+        {
+            MemoryStream[] streams = new MemoryStream[4];
+            try
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    streams[i] = new MemoryStream();
+                    //Header, codec block, and start of parent block
+                    int numBlocks = (i == 1 || i == 3) ? 5 : 4;
+                    streams[i].Write(BitConverter.GetBytes(numBlocks).Reverse().ToArray(), 0, 4);
+                    streams[i].Write(AudioTuningHeader, 0, AudioTuningHeader.Length);
+                    //Parent tgi
+                    byte[] b = null;
+                    switch (i)
+                    {
+                        case 0:
+                            b = new byte[] { 0x51, 0xD1, 0x81, 0xC0, 0x33, 0xC3, 0xFF, 0xE2 };
+                            break;
+                        case 1:
+                            b = new byte[] { 0x6D, 0x77, 0x65, 0xBF, 0xCD, 0x1C, 0x9D, 0x64 };
+                            break;
+                        case 2:
+                            b = new byte[] { 0xDD, 0xE1, 0x94, 0x24, 0x7C, 0xD0, 0xE0, 0xFF };
+                            break;
+                        case 3:
+                            b = new byte[] { 0x91, 0x88, 0x1D, 0xA9, 0xA1, 0x8A, 0x4C, 0x27 };
+                            break;
+                    }
+                    streams[i].Write(b, 0, b.Length);
+                    streams[i].Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
+                    //Start of samples block
+                    streams[i].Write(SampleTuningHeader, 0, 8);
+                    streams[i].Write(BitConverter.GetBytes(fileCount).Reverse().ToArray(), 0, 4);
+                    streams[i].Write(SampleTuningHeader, 12, 4);
+                }
+                return streams;
+            }
+            catch
+            {
+                foreach (MemoryStream s in streams)
+                {
+                    if (s != null)
+                    {
+                        s.Close();
+                    }
+                }
+                throw;
+            }
+        }
+
+        internal static void WriteStationTrack(string trackTitle, MemoryStream[] streams)
+        {
+            ulong hashedInstance = FNV64.GetHash(trackTitle);
+            foreach (MemoryStream current in streams)
+            {
+                byte[] b = BitConverter.GetBytes(hashedInstance);
+                current.Write(b, 0, b.Length);
+                current.Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
+            }
+        }
+
+        internal static void FinalizeStationTuning(Package package, string station, MemoryStream[] streams)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                string name = "Stereo_" + ((i == 2 || i == 3) ? "Wired_" : "");
+                name += station == "Island_Life" ? "IslandLife"
+                      : station == "Beach_Party" ? "BeachParty"
+                      : station;
+                name += (i == 1 || i == 3) ? "_Virtual" : "";
+                //2654790449 block, with IsVirtual block if needed
+                streams[i].Write(StationTuningFooter, 0, (i == 1 || i == 3) ? 18 : 9);
+                TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, FNV64.GetHash(name));
+                package.AddResource(tgi, streams[i], true);
+            }
         }
 
         internal static FileStream AddSnr(MusicFile file, Package package)
@@ -127,18 +218,26 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static MemoryStream AddPreviewTuning(MusicFile file, Package package)
+        internal static MemoryStream AddPreviewTuning(string trackTitle, Package package)
         {
             MemoryStream s = null;
             try
             {
-                ulong hashedInstance = FNV64.GetHash(file.mDisplayName);
+                ulong hashedInstance = FNV64.GetHash(trackTitle);
                 TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, hashedInstance);
                 s = new MemoryStream();
-                s.Write(PreviewTuningHeader, 0, PreviewTuningHeader.Length);
+                //Header, codec block, and start of parent block
+                s.Write(BitConverter.GetBytes(3).Reverse().ToArray(), 0, 4);
+                s.Write(AudioTuningHeader, 0, AudioTuningHeader.Length);
+                //Parent tgi
+                s.Write(new byte[] { 0x5E, 0x87, 0x99, 0x26, 0x70, 0xE5, 0x6A, 0x25 }, 0, 8);
+                s.Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
+                //Start of samples block
+                s.Write(SampleTuningHeader, 0, SampleTuningHeader.Length);
+
                 byte[] b = BitConverter.GetBytes(hashedInstance);
                 s.Write(b, 0, b.Length);
-                s.Write(TrackTuningFooter, 0, TrackTuningFooter.Length);
+                s.Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
                 if (package.AddResource(tgi, s, true) == null)
                 {
                     //TEST
