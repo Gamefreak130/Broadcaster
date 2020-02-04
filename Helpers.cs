@@ -40,6 +40,12 @@ namespace Gamefreak130.Broadcaster
             "  </Stereo>\n" +
             "</MusicSelection>";
 
+        private static byte[] StblHeader => new byte[]
+        {
+            0x53, 0x54, 0x42, 0x4C, 0x02, 0x00, 0x00, 0x02, 
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+
         private static byte[] AudioTuningHeader => new byte[]
         {
             0xBA, 0x03, 0xD0, 0xCD, 0x00, 0x0A, 0x00, 
@@ -177,6 +183,47 @@ namespace Gamefreak130.Broadcaster
                 streams[i].Write(StationTuningFooter, 0, (i == 1 || i == 3) ? 18 : 9);
                 TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0x001407EC, FNV64.GetHash(name));
                 package.AddResource(tgi, streams[i], true);
+            }
+        }
+
+        internal static Stream[] AddStbl(Package package, string instanceName, string station)
+        {
+            MemoryStream[] streams = new MemoryStream[23];
+            try
+            {
+                byte[] instance = BitConverter.GetBytes(FNV64.GetHash("Strings_" + instanceName));
+                for (byte i = 0x00; i < 0x17; i++)
+                {
+                    instance[7] = i;
+                    TGIBlock tgi = new TGIBlock(0, null, 0x220557DA, 0, BitConverter.ToUInt64(instance, 0));
+                    streams[i] = new MemoryStream();
+                    streams[i].Write(StblHeader, 0, StblHeader.Length);
+                    byte[] hashedName = Encoding.UTF8.GetBytes(station.Replace('_', ' ')).Reverse().ToArray();
+                    //TODO Refactor
+                    //Write preview menu string 
+                    byte[] key = BitConverter.GetBytes(FNV64.GetHash($"Gameplay/Excel/Stereo/Stations:{station}"));
+                    streams[i].Write(key, 0, key.Length);
+                    streams[i].Write(BitConverter.GetBytes(station.Length), 0, 4);
+                    streams[i].Write(hashedName, 0, hashedName.Length);
+                    //Write pie menu string 
+                    /*key = 
+                    streams[i].Write();
+                    streams[i].Write(BitConverter.GetBytes(station.Length), 0, 4);
+                    streams[i].Write(hashedName, 0, hashedName.Length);*/
+                    package.AddResource(tgi, streams[i], true);
+                }
+                return streams;
+            }
+            catch
+            {
+                foreach (MemoryStream s in streams)
+                {
+                    if (s != null)
+                    {
+                        s.Close();
+                    }
+                }
+                throw;
             }
         }
 
