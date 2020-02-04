@@ -148,20 +148,28 @@ namespace Gamefreak130.Broadcaster
             List<Stream> resources = new List<Stream>();
             try
             {
+                Package package = Package.NewPackage(0) as Package;
+                Random random = new Random();
+                string instanceName = "";
+                for (int i = 0; i < 10; i++)
+                {
+                    instanceName += (char)random.Next(48, 58);
+                }
                 string station = "";
-                bool requiresStbl;
                 cmbStation.Invoke(new ControlAccessor(delegate () 
                 { 
                     station = cmbStation.Text;
-                    requiresStbl = cmbStation.Items.Contains(station);
+                    station = station.Replace(' ', '_');
+                    if (!cmbStation.Items.Contains(cmbStation.Text))
+                    {
+                        Stream[] streams = Helpers.AddStbl(package, instanceName, station);
+                    }
                 }));
-                station = station.Replace(' ', '_');
                 station = Helpers.FixupStation(station);
-                //TODO Station STBL if necessary
+                //TEST Station STBL if necessary
                 //CONSIDER Add NMAP?
                 //CONSIDER translatable string table?
                 //TEST UTF-8 compatibility
-                Package package = Package.NewPackage(0) as Package;
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
                 resources.Add(musicEntries);
                 MemoryStream[] stationTuning = Helpers.CreateStationTuning(music.Count);
@@ -182,12 +190,7 @@ namespace Gamefreak130.Broadcaster
 
                     Helpers.WriteStationTrack(track.mDisplayName, stationTuning);
                 }
-                Random random = new Random();
-                string instanceName = "";
-                for (int i = 0; i < 10; i++)
-                {
-                    instanceName += (char)random.Next(48, 58);
-                }
+                
                 Helpers.FinalizeMusicEntries(package, instanceName, musicEntries);
                 Helpers.FinalizeStationTuning(package, station, stationTuning);
                 /*Stream s = Helpers.AddAssembly(package, randomName);
