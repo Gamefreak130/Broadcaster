@@ -42,7 +42,7 @@ namespace Gamefreak130.Broadcaster
 
         private static byte[] StblHeader => new byte[]
         {
-            0x53, 0x54, 0x42, 0x4C, 0x02, 0x00, 0x00, 0x02, 
+            0x53, 0x54, 0x42, 0x4C, 0x02, 0x00, 0x00, 0x01, 
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
@@ -198,13 +198,21 @@ namespace Gamefreak130.Broadcaster
                     TGIBlock tgi = new TGIBlock(0, null, 0x220557DA, 0, BitConverter.ToUInt64(instance, 0));
                     streams[i] = new MemoryStream();
                     streams[i].Write(StblHeader, 0, StblHeader.Length);
-                    byte[] hashedName = Encoding.UTF8.GetBytes(station.Replace('_', ' ')).Reverse().ToArray();
+                    byte[] value = Encoding.Unicode.GetBytes(station.Replace('_', ' '));
+                    /*byte[] value = new byte[(b.Length * 2) - 1];
+                    for (int j = 0; j < value.Length; j++)
+                    {
+                        if (j % 2 == 0)
+                        {
+                            value[j] = b[j / 2];
+                        }
+                    }*/
                     //TODO Refactor
                     //Write preview menu string 
                     byte[] key = BitConverter.GetBytes(FNV64.GetHash($"Gameplay/Excel/Stereo/Stations:{station}"));
                     streams[i].Write(key, 0, key.Length);
-                    streams[i].Write(BitConverter.GetBytes(station.Length), 0, 4);
-                    streams[i].Write(hashedName, 0, hashedName.Length);
+                    streams[i].Write(BitConverter.GetBytes(value.Length / 2), 0, 4);
+                    streams[i].Write(value, 0, value.Length);
                     //Write pie menu string 
                     /*key = 
                     streams[i].Write();

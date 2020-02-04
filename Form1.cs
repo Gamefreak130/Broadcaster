@@ -166,7 +166,6 @@ namespace Gamefreak130.Broadcaster
                     }
                 }));
                 station = Helpers.FixupStation(station);
-                //TEST Station STBL if necessary
                 //CONSIDER Add NMAP?
                 //CONSIDER translatable string table?
                 //TEST UTF-8 compatibility
