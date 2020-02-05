@@ -1,20 +1,18 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Sims3.SimIFace;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Broadcast")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Gamefreak130.Broadcaster")]
+[assembly: AssemblyDescription("A program to automatically generate mod packages to create custom stereo stations or add music to existing ones")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Broadcast")]
-[assembly: AssemblyCopyright("Copyright © 2020")]
+[assembly: AssemblyProduct("Gamefreak130.Broadcaster")]
+[assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: Tunable]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -22,7 +20,7 @@ using Sims3.SimIFace;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("2dec4349-4f6b-442f-a1d1-2d7a78110f7a")]
+[assembly: Guid("36ee9822-cb78-41e6-817d-02975fd6aa1a")]
 
 // Version information for an assembly consists of the following four values:
 //

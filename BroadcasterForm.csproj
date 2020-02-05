@@ -43,6 +43,10 @@
       <HintPath>lib\s3pi.Package.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="s3pi.ScriptResource">
+      <HintPath>lib\s3pi.ScriptResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="s3pi.Settings">
       <HintPath>lib\s3pi.Settings.dll</HintPath>
       <Private>False</Private>
@@ -76,7 +80,7 @@
     </Compile>
     <Compile Include="Helpers.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\FormInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -118,6 +122,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="lib\s3pi.Package.xml" />
+    <Content Include="lib\s3pi.ScriptResource.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="lib\s3pi.Settings.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
