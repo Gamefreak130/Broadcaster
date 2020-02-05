@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Text;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Gamefreak130.Broadcaster
 {
@@ -19,11 +20,19 @@ namespace Gamefreak130.Broadcaster
     {
         private const string kInstantiator =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<Broadcaster>\n" +
+            "  <Station value=\"{0}\">\n" +
+            "    <!--Name of the station associated with this package. Do not change or bad things will happen.-->\n" +
+            "  </Station>\n" +
+            "</Broadcaster>";
+
+        private const string kBootstrap =
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<base>\n" +
             "  <Current_Tuning>\n" +
-            "    <kStation value=\"{0}\">\n" +
-            "      <!--Name of the station associated with this package. Do not change or bad things will happen.-->\n" +
-            "    </kStation>\n" +
+            "    <kCJackB value=\"True\">\n" +
+            "      <!--True: Enables Crackerjack Bonanza mode. False: Causes the apocalypse. Maybe.-->\n" +
+            "    </kCJackB>\n" +
             "  </Current_Tuning>\n" +
             "</base>";
 
@@ -39,6 +48,14 @@ namespace Gamefreak130.Broadcaster
             "    </Genre>\n" +
             "  </Stereo>\n" +
             "</MusicSelection>";
+
+        private static byte[] AssemblyTemplate => new byte[]
+        {
+            //Broadcast
+            0x42, 0x72, 0x6F, 0x61, 0x64, 0x63, 0x61, 0x73, 0x74, 
+            //Template
+            0x54, 0x65, 0x6D, 0x70, 0x6C, 0x61, 0x74, 0x65
+        };
 
         private static byte[] StblHeader => new byte[]
         {
@@ -199,14 +216,6 @@ namespace Gamefreak130.Broadcaster
                     streams[i] = new MemoryStream();
                     streams[i].Write(StblHeader, 0, StblHeader.Length);
                     byte[] value = Encoding.Unicode.GetBytes(station.Replace('_', ' '));
-                    /*byte[] value = new byte[(b.Length * 2) - 1];
-                    for (int j = 0; j < value.Length; j++)
-                    {
-                        if (j % 2 == 0)
-                        {
-                            value[j] = b[j / 2];
-                        }
-                    }*/
                     //TODO Refactor
                     //Write preview menu string 
                     byte[] key = BitConverter.GetBytes(FNV64.GetHash($"Gameplay/Excel/Stereo/Stations:{station}"));
@@ -310,14 +319,74 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static FileStream AddAssembly(Package package, string name)
+        internal static BinaryReader AddAssembly(Package package, string instanceName)
         {
-            FileStream s = null;
+            BinaryReader result = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x073FAA07, 0, FNV64.GetHash(name));
-                //TODO 
-                //s = File.OpenRead();
+                TGIBlock tgi = new TGIBlock(0, null, 0x073FAA07, 0, FNV64.GetHash(instanceName));
+                byte[] array = new byte[0];
+                using (FileStream fileStream = File.OpenRead(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BroadcastTemplate.dll")))
+                {
+                    using (BinaryReader binaryReader = new BinaryReader(fileStream))
+                    {
+                        array = new byte[fileStream.Length];
+                        binaryReader.Read(array, 0, (int)fileStream.Length);
+                    }
+                }
+                byte[] array2 = Encoding.ASCII.GetBytes(instanceName);
+                int num = 0;
+                List<byte> list = new List<byte>();
+                List<byte> list2 = new List<byte>();
+                for (int i = 0; i < array.Length; i++)
+                {
+                    byte b = array[i];
+                    if (b == AssemblyTemplate[num])
+                    {
+                        list2.Add(b);
+                        num++;
+                        if (num >= AssemblyTemplate.Length)
+                        {
+                            list.AddRange(array2);
+                            list2.Clear();
+                            num = 0;
+                        }
+                    }
+                    else
+                    {
+                        list.AddRange(list2);
+                        list2.Clear();
+                        num = 0;
+                        list.Add(b);
+                    }
+                }
+                ScriptResource.ScriptResource assembly = new ScriptResource.ScriptResource(0, null);
+                using (MemoryStream s = new MemoryStream(list.ToArray()))
+                {
+                    result = new BinaryReader(s);
+                    assembly.Assembly = result;
+                }
+                ResourceIndexEntry entry = (ResourceIndexEntry)package.AddResource(tgi, null, true);
+                package.ReplaceResource(entry, assembly);
+                return result;
+            }
+            catch
+            {
+                if (result != null)
+                {
+                    result.Close();
+                }
+                throw;
+            }
+        }
+
+        internal static MemoryStream AddInstantiator(Package package, string instanceName, string station)
+        {
+            MemoryStream s = null;
+            try
+            {
+                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(instanceName));
+                s = new MemoryStream(Encoding.ASCII.GetBytes(string.Format(kInstantiator, station)));
                 package.AddResource(tgi, s, true);
                 return s;
             }
@@ -331,13 +400,13 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static MemoryStream AddInstantiator(Package package, string instanceName, string station)
+        internal static MemoryStream AddBootstrap(Package package)
         {
             MemoryStream s = null;
             try
             {
-                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(instanceName));
-                s = new MemoryStream(Encoding.ASCII.GetBytes(string.Format(kInstantiator, station)));
+                TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash("Gamefreak130.Broadcaster.Bootstrap"));
+                s = new MemoryStream(Encoding.ASCII.GetBytes(kBootstrap));
                 package.AddResource(tgi, s, true);
                 return s;
             }

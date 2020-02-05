@@ -145,13 +145,13 @@ namespace Gamefreak130.Broadcaster
         private void WritePackage()
         {
             List<FileStream> files = new List<FileStream>();
-            List<Stream> resources = new List<Stream>();
+            List<IDisposable> resources = new List<IDisposable>();
             try
             {
                 Package package = Package.NewPackage(0) as Package;
                 Random random = new Random();
                 string instanceName = "";
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 17; i++)
                 {
                     instanceName += (char)random.Next(48, 58);
                 }
@@ -162,7 +162,8 @@ namespace Gamefreak130.Broadcaster
                     station = station.Replace(' ', '_');
                     if (!cmbStation.Items.Contains(cmbStation.Text))
                     {
-                        Stream[] streams = Helpers.AddStbl(package, instanceName, station);
+                        IDisposable[] streams = Helpers.AddStbl(package, instanceName, station);
+                        resources.AddRange(streams);
                     }
                 }));
                 station = Helpers.FixupStation(station);
@@ -172,10 +173,7 @@ namespace Gamefreak130.Broadcaster
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
                 resources.Add(musicEntries);
                 MemoryStream[] stationTuning = Helpers.CreateStationTuning(music.Count);
-                foreach (Stream current in stationTuning)
-                {
-                    resources.Add(current);
-                }
+                resources.AddRange(stationTuning);
 
                 foreach (MusicFile track in music)
                 {
@@ -192,11 +190,12 @@ namespace Gamefreak130.Broadcaster
                 
                 Helpers.FinalizeMusicEntries(package, instanceName, musicEntries);
                 Helpers.FinalizeStationTuning(package, station, stationTuning);
-                /*Stream s = Helpers.AddAssembly(package, randomName);
-                resources.Add(s);*/
-                Stream s = Helpers.AddInstantiator(package, instanceName, station);
-                resources.Add(s);
-                //TGIBlock tgi = new TGIBlock(0, null, 0x8070223D, 0, System.Security.Cryptography.FNV64.GetHash("TEST"));
+                IDisposable res = Helpers.AddAssembly(package, instanceName);
+                resources.Add(res);
+                res = Helpers.AddBootstrap(package);
+                resources.Add(res);
+                res = Helpers.AddInstantiator(package, instanceName, station);
+                resources.Add(res);
                 package.SaveAs(saveFileDialog.FileName);
             }
             catch (Exception ex)
@@ -228,9 +227,9 @@ namespace Gamefreak130.Broadcaster
                     s.Close();
                     File.Delete(path);
                 }
-                foreach (Stream s in resources)
+                foreach (IDisposable s in resources)
                 {
-                    s.Close();
+                    s.Dispose();
                 }
             }
         }
