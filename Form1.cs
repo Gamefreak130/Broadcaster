@@ -185,6 +185,12 @@ namespace Gamefreak130.Broadcaster
                     Helpers.WriteMusicEntry(track, musicEntries);
 
                     Helpers.WriteStationTrack(track.mDisplayName, stationTuning);
+                    //Stations require at least two tracks to function properly
+                    //So if there is only one track, it is added to the AUDT twice
+                    if (music.Count == 1)
+                    {
+                        Helpers.WriteStationTrack(track.mDisplayName, stationTuning);
+                    }
                 }
                 
                 Helpers.FinalizeMusicEntries(package, instanceName, musicEntries);

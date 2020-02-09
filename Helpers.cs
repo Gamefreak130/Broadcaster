@@ -158,7 +158,7 @@ namespace Gamefreak130.Broadcaster
                     streams[i].Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
                     //Start of samples block
                     streams[i].Write(SampleTuningHeader, 0, 8);
-                    streams[i].Write(BitConverter.GetBytes(fileCount).Reverse().ToArray(), 0, 4);
+                    streams[i].Write(BitConverter.GetBytes(Math.Max(2, fileCount)).Reverse().ToArray(), 0, 4);
                     streams[i].Write(SampleTuningHeader, 12, 4);
                 }
                 return streams;
