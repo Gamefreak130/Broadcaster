@@ -74,7 +74,7 @@ namespace Gamefreak130.Common
 
 namespace Gamefreak130.Broadcaster
 {
-    internal enum Stations : uint
+    internal enum GameStations : uint
     {
         Electronica = 1,
         Pop = 1,
@@ -134,24 +134,35 @@ namespace Gamefreak130.Broadcaster
 
         private static void AddStationIfNeeded()
         {
-            try
+            ProductVersion version = ProductVersion.Undefined;
+            string translationKey = mStation;
+            string playlistKey = mStation;
+            if (Enum.IsDefined(typeof(GameStations), mStation))
             {
-                ProductVersion version = (ProductVersion)Enum.Parse(typeof(Stations), mStation);
-                if (!GameUtils.IsInstalled(version))
+                version = (ProductVersion)Enum.Parse(typeof(GameStations), mStation, true);
+                switch (mStation)
                 {
-                    switch (mStation)
-                    {
-                        //TODO Implement this
-                        default:
-                            throw new Exception();
-                    }
+                    case "Beach_Party":
+                    case "Island_Life":
+                        translationKey = translationKey.Replace("_", "");
+                        playlistKey = playlistKey.Replace("_", "");
+                        break;
+                    case "Future":
+                        translationKey += "World";
+                        break;
+                    case "Superhero":
+                        translationKey = "Epic";
+                        break;
+                    case "Western":
+                        translationKey = "Spaghetti_" + translationKey;
+                        break;
                 }
             }
-            catch
+            string text = "Gameplay/Excel/Stereo/Stations:" + translationKey;
+            if (!GameUtils.IsInstalled(version) && !StereoStationData.sStereoStationDictionary.ContainsKey(text))
             {
-                string text = $"Gameplay/Excel/Stereo/Stations:{mStation}";
-                StereoStationData data = new StereoStationData(text, $"Stereo_{mStation}", $"Stereo_Wired_{mStation}",
-                                                               $"Stereo_{mStation}_Virtual", $"Stereo_Wired_{mStation}_Virtual",
+                StereoStationData data = new StereoStationData(text, $"Stereo_{playlistKey}", $"Stereo_Wired_{playlistKey}",
+                                                               $"Stereo_{playlistKey}_Virtual", $"Stereo_Wired_{playlistKey}_Virtual",
                                                                Sims3.SimIFace.CAS.FavoriteMusicType.Custom, false, false, false,
                                                                WorldName.Undefined, ProductVersion.BaseGame);
                 StereoStationData.sStereoStationDictionary.Add(text, data);
@@ -169,8 +180,6 @@ namespace Gamefreak130.Broadcaster
                         string name = typeof(Bootstrap).Assembly.GetName().Name;
                         if (Simulator.LoadXML("Music_Entries_" + name) is XmlDocument xml && xml.GetElementsByTagName("MusicSelection")[0] is XmlElement xmlElement)
                         {
-                            //DEBUG
-                            //Sims3.UI.StyledNotification.Show(new Sims3.UI.StyledNotification.Format("working", Sims3.UI.StyledNotification.NotificationStyle.kDebugAlert));
                             sDialog.LoadSongData(xmlElement, "Stereo", 0);
                             if (sDialog.mItemGridGenreButtons.Count > 0)
                             {

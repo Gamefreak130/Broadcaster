@@ -216,17 +216,11 @@ namespace Gamefreak130.Broadcaster
                     streams[i] = new MemoryStream();
                     streams[i].Write(StblHeader, 0, StblHeader.Length);
                     byte[] value = Encoding.Unicode.GetBytes(station.Replace('_', ' '));
-                    //TODO Refactor
                     //Write preview menu string 
                     byte[] key = BitConverter.GetBytes(FNV64.GetHash($"Gameplay/Excel/Stereo/Stations:{station}"));
                     streams[i].Write(key, 0, key.Length);
                     streams[i].Write(BitConverter.GetBytes(value.Length / 2), 0, 4);
                     streams[i].Write(value, 0, value.Length);
-                    //Write pie menu string 
-                    /*key = 
-                    streams[i].Write();
-                    streams[i].Write(BitConverter.GetBytes(station.Length), 0, 4);
-                    streams[i].Write(hashedName, 0, hashedName.Length);*/
                     package.AddResource(tgi, streams[i], true);
                 }
                 return streams;
@@ -474,7 +468,7 @@ namespace Gamefreak130.Broadcaster
             using (TagLib.File file = TagLib.File.Create(mFullName))
             {
                 mTitle = file.Tag.Title ?? mDisplayName;
-                mArtist = file.Tag.Performers.Length > 0 ? string.Join(", ", file.Tag.Performers) : "-";
+                mArtist = file.Tag.Performers.Length > 0 ? string.Join(", ", file.Tag.Performers) : "__";
             }
         }
 
