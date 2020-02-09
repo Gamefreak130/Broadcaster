@@ -158,8 +158,7 @@ namespace Gamefreak130.Broadcaster
                 string station = "";
                 cmbStation.Invoke(new ControlAccessor(delegate () 
                 { 
-                    station = cmbStation.Text;
-                    station = station.Replace(' ', '_');
+                    station = cmbStation.Text.Trim().Replace(' ', '_');
                     if (!cmbStation.Items.Contains(cmbStation.Text))
                     {
                         IDisposable[] streams = Helpers.AddStbl(package, instanceName, station);
