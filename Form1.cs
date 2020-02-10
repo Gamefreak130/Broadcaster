@@ -168,7 +168,6 @@ namespace Gamefreak130.Broadcaster
                 station = Helpers.FixupStation(station);
                 //CONSIDER Add NMAP?
                 //CONSIDER translatable string table?
-                //TEST UTF-8 compatibility
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
                 resources.Add(musicEntries);
                 MemoryStream[] stationTuning = Helpers.CreateStationTuning(music.Count);

@@ -259,7 +259,6 @@ namespace Gamefreak130.Broadcaster
                 s = File.OpenRead(snrName);
                 if (package.AddResource(tgi, s, true) == null)
                 {
-                    //TEST
                     throw new DuplicateFileException();
                 }
                 return s;
@@ -298,7 +297,6 @@ namespace Gamefreak130.Broadcaster
                 s.Write(InstanceTuningFooter, 0, InstanceTuningFooter.Length);
                 if (package.AddResource(tgi, s, true) == null)
                 {
-                    //TEST
                     throw new DuplicateFileException();
                 }
                 return s;
@@ -468,7 +466,9 @@ namespace Gamefreak130.Broadcaster
             using (TagLib.File file = TagLib.File.Create(mFullName))
             {
                 mTitle = file.Tag.Title ?? mDisplayName;
+                mTitle = mTitle.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
                 mArtist = file.Tag.Performers.Length > 0 ? string.Join(", ", file.Tag.Performers) : "__";
+                mArtist = mArtist.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
             }
         }
 
