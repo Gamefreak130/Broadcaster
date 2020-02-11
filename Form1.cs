@@ -37,10 +37,10 @@ namespace Gamefreak130.Broadcaster
         
         private void BtnRemove_Click(object sender, EventArgs e)
         {
-            if (listBoxMusic.SelectedItems.Count != 0)
+            if (lstMusic.SelectedItems.Count != 0)
             {
-                object[] selectedObjects = new object[listBoxMusic.SelectedItems.Count];
-                listBoxMusic.SelectedItems.CopyTo(selectedObjects, 0);
+                object[] selectedObjects = new object[lstMusic.SelectedItems.Count];
+                lstMusic.SelectedItems.CopyTo(selectedObjects, 0);
                 foreach (MusicFile current in selectedObjects)
                 {
                     RemoveTrack(current);
@@ -51,13 +51,13 @@ namespace Gamefreak130.Broadcaster
 
         private void ListBoxMusic_MouseMoved(object sender, MouseEventArgs e)
         {
-            int i = listBoxMusic.IndexFromPoint(e.Location);
+            int i = lstMusic.IndexFromPoint(e.Location);
             if (i > -1)
             {
-                string msg = (listBoxMusic.Items[i] as MusicFile).mFullName;
-                if (musicToolTip.GetToolTip(listBoxMusic) != msg)
+                string msg = (lstMusic.Items[i] as MusicFile).mFullName;
+                if (musicToolTip.GetToolTip(lstMusic) != msg)
                 {
-                    musicToolTip.SetToolTip(listBoxMusic, (listBoxMusic.Items[i] as MusicFile).mFullName);
+                    musicToolTip.SetToolTip(lstMusic, (lstMusic.Items[i] as MusicFile).mFullName);
                 }
             }
             else
@@ -85,7 +85,7 @@ namespace Gamefreak130.Broadcaster
             {
                 MusicFile track = new MusicFile(openFileDialog.FileNames[i], openFileDialog.SafeFileNames[i]);
                 music.Add(track);
-                listBoxMusic.Items.Add(track);
+                lstMusic.Items.Add(track);
             }
             ToggleButton();
         }
@@ -107,7 +107,7 @@ namespace Gamefreak130.Broadcaster
 
         private void ToggleButton()
         {
-            btnGenerate.Enabled = !string.IsNullOrWhiteSpace(cmbStation.Text) && listBoxMusic.Items.Count != 0;
+            btnGenerate.Enabled = !string.IsNullOrWhiteSpace(cboStation.Text) && lstMusic.Items.Count != 0;
         }
 
         private void BtnGenerate_Click(object sender, EventArgs e)
@@ -124,16 +124,16 @@ namespace Gamefreak130.Broadcaster
             }
             ToggleWorkingStatus();
             btnGenerate.Text = "   Broadcast";
-            for (int i = listBoxMusic.Items.Count - 1; i >= 0; i--)
+            for (int i = lstMusic.Items.Count - 1; i >= 0; i--)
             {
-                RemoveTrack((MusicFile)listBoxMusic.Items[i]);
+                RemoveTrack((MusicFile)lstMusic.Items[i]);
             }
-            cmbStation.Text = string.Empty;
+            cboStation.Text = string.Empty;
         }
         
         private void RemoveTrack(MusicFile track)
         {
-            listBoxMusic.Items.Remove(track);
+            lstMusic.Items.Remove(track);
             music.Remove(track);
         }
 
@@ -156,17 +156,16 @@ namespace Gamefreak130.Broadcaster
                     instanceName += (char)random.Next(48, 58);
                 }
                 string station = "";
-                cmbStation.Invoke(new ControlAccessor(delegate () 
+                cboStation.Invoke(new ControlAccessor(delegate () 
                 { 
-                    station = cmbStation.Text.Trim().Replace(' ', '_');
-                    if (!cmbStation.Items.Contains(cmbStation.Text))
+                    station = cboStation.Text.Trim().Replace(' ', '_');
+                    if (!cboStation.Items.Contains(cboStation.Text))
                     {
                         IDisposable[] streams = Helpers.AddStbl(package, instanceName, station);
                         resources.AddRange(streams);
                     }
                 }));
                 station = Helpers.FixupStation(station);
-                //CONSIDER Add NMAP?
                 //CONSIDER translatable string table?
                 MemoryStream musicEntries = Helpers.CreateMusicEntries(station);
                 resources.Add(musicEntries);
@@ -198,7 +197,7 @@ namespace Gamefreak130.Broadcaster
                 resources.Add(res);
                 res = Helpers.AddBootstrap(package);
                 resources.Add(res);
-                res = Helpers.AddInstantiator(package, instanceName, station);
+                res = Helpers.AddInstantiator(package, instanceName, station, chkWorkout.Checked, chkSlowDance.Checked);
                 resources.Add(res);
                 package.SaveAs(saveFileDialog.FileName);
             }

@@ -24,6 +24,8 @@ namespace Gamefreak130.Broadcaster
             "  <Station value=\"{0}\">\n" +
             "    <!--Name of the station associated with this package. Do not change or bad things will happen.-->\n" +
             "  </Station>\n" +
+            "  <IsWorkoutStation value=\"{1}\" />\n" +
+            "  <IsSlowDanceStation value=\"{2}\" />\n" +
             "</Broadcaster>";
 
         private const string kBootstrap =
@@ -372,13 +374,15 @@ namespace Gamefreak130.Broadcaster
             }
         }
 
-        internal static MemoryStream AddInstantiator(Package package, string instanceName, string station)
+        internal static MemoryStream AddInstantiator(Package package, string instanceName, string station, bool isWorkoutStation, bool isSlowDanceStation)
         {
             MemoryStream s = null;
             try
             {
                 TGIBlock tgi = new TGIBlock(0, null, 0x0333406C, 0, FNV64.GetHash(instanceName));
-                s = new MemoryStream(Encoding.ASCII.GetBytes(string.Format(kInstantiator, station)));
+                string workout = isWorkoutStation ? "1" : "0";
+                string slowDance = isSlowDanceStation ? "1" : "0";
+                s = new MemoryStream(Encoding.ASCII.GetBytes(string.Format(kInstantiator, station, workout, slowDance)));
                 package.AddResource(tgi, s, true);
                 return s;
             }
