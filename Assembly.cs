@@ -110,8 +110,6 @@ namespace Gamefreak130.Broadcaster
         [Tunable]
         private static readonly bool kCJackB;
 
-        private static string mStation = "";
-
         private static bool mOptionsInjectionHandled;
 
         static Bootstrap()
@@ -121,26 +119,40 @@ namespace Gamefreak130.Broadcaster
 
         private static void OnStartupApp(object sender, EventArgs e)
         {
+            string station = "";
+            bool isWorkoutStation = false;
+            bool isSlowDanceStation = false;
             if (Simulator.LoadXML(typeof(Bootstrap).Assembly.GetName().Name) is XmlDocument xmlDocument)
             {
-                if (xmlDocument.GetElementsByTagName("Broadcaster")[0] is XmlElement xmlElement && xmlElement.GetElementsByTagName("Station")[0] is XmlElement stationElement)
+                if (xmlDocument.GetElementsByTagName("Broadcaster")[0] is XmlElement xmlElement)
                 {
-                    mStation = stationElement.GetAttribute("value");
+                    if (xmlElement.GetElementsByTagName("Station")[0] is XmlElement stationElement)
+                    {
+                        station = stationElement.GetAttribute("value");
+                    }
+                    if (xmlElement.GetElementsByTagName("IsWorkoutStation")[0] is XmlElement workoutElement)
+                    {
+                        isWorkoutStation = workoutElement.GetAttribute("value") == "1" ? true : false;
+                    }
+                    if (xmlElement.GetElementsByTagName("IsSlowDanceStation")[0] is XmlElement danceElement)
+                    {
+                        isWorkoutStation = danceElement.GetAttribute("value") == "1" ? true : false;
+                    }
                 }
             }
-            AddStationIfNeeded();
+            AddStationIfNeeded(station, isWorkoutStation, isSlowDanceStation);
             Simulator.AddObject(new Common.RepeatingFunctionTask(new Common.GenericDelegate<bool>(InjectOptions)));
         }
 
-        private static void AddStationIfNeeded()
+        private static void AddStationIfNeeded(string station, bool isWorkoutStation, bool isSlowDanceStation)
         {
             ProductVersion version = ProductVersion.Undefined;
-            string translationKey = mStation;
-            string playlistKey = mStation;
-            if (Enum.IsDefined(typeof(GameStations), mStation))
+            string translationKey = station;
+            string playlistKey = station;
+            if (Enum.IsDefined(typeof(GameStations), station))
             {
-                version = (ProductVersion)Enum.Parse(typeof(GameStations), mStation, true);
-                switch (mStation)
+                version = (ProductVersion)Enum.Parse(typeof(GameStations), station, true);
+                switch (station)
                 {
                     case "Beach_Party":
                     case "Island_Life":
@@ -163,7 +175,7 @@ namespace Gamefreak130.Broadcaster
             {
                 StereoStationData data = new StereoStationData(text, $"Stereo_{playlistKey}", $"Stereo_Wired_{playlistKey}",
                                                                $"Stereo_{playlistKey}_Virtual", $"Stereo_Wired_{playlistKey}_Virtual",
-                                                               Sims3.SimIFace.CAS.FavoriteMusicType.Custom, false, false, false,
+                                                               Sims3.SimIFace.CAS.FavoriteMusicType.Custom, isWorkoutStation, false, isSlowDanceStation,
                                                                WorldName.Undefined, ProductVersion.BaseGame);
                 StereoStationData.sStereoStationDictionary.Add(text, data);
             }
