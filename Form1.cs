@@ -129,6 +129,8 @@ namespace Gamefreak130.Broadcaster
                 RemoveTrack((MusicFile)lstMusic.Items[i]);
             }
             cboStation.Text = string.Empty;
+            chkSlowDance.Checked = false;
+            chkWorkout.Checked = false;
         }
         
         private void RemoveTrack(MusicFile track)
