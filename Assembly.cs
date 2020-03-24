@@ -136,7 +136,7 @@ namespace Gamefreak130.Broadcaster
                     }
                     if (xmlElement.GetElementsByTagName("IsSlowDanceStation")[0] is XmlElement danceElement)
                     {
-                        isWorkoutStation = danceElement.GetAttribute("value") == "1" ? true : false;
+                        isSlowDanceStation = danceElement.GetAttribute("value") == "1" ? true : false;
                     }
                 }
             }
